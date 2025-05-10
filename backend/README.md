@@ -1,23 +1,21 @@
-# Flask SQLite Boilerplate
+# Flask SQLite Boilerplate (Simplified)
 
-A basic Flask application with SQLite database integration.
+A radically simplified Flask application with SQLite for serving starter prompts.
 
 ## Project Structure
 
 ```
 .
 ├── pyproject.toml      # Project configuration and dependencies
-├── run.py             # Application entry point
-├── src/               # Source code directory
+├── run.py              # Application entry point
+├── src/
 │   └── flask_sqlite_boilerplate/
-│       ├── __init__.py    # Package initialization
-│       ├── models/        # Database models
-│       │   └── user.py   # User model
-│       ├── routes/       # API routes
-│       │   └── user_routes.py # User-related endpoints
-│       └── cli.py        # Database management commands
-└── instance/          # Instance-specific files
-    └── app.db         # SQLite database file (created by Flask)
+│       ├── __init__.py     # Package initialization, contains app factory and routes
+│       ├── models/
+│       │   └── starter_prompt.py  # StarterPrompt model
+│       └── cli.py          # Database management commands (init-db, seed-prompts)
+└── instance/
+    └── app.db            # SQLite database file (created by Flask)
 ```
 
 ## Setup
@@ -33,14 +31,7 @@ uv venv
 ```
 
 3. Activate the virtual environment:
-- On macOS/Linux:
-```bash
-source .venv/bin/activate
-```
-- On Windows:
-```bash
-.venv\Scripts\activate
-```
+   (macOS/Linux) `source .venv/bin/activate` or (Windows) `.venv\Scripts\activate`
 
 4. Install dependencies:
 ```bash
@@ -49,44 +40,50 @@ uv pip install -e .
 
 ## Database Management
 
-The application provides several CLI commands for database management. You need to set the `FLASK_APP` environment variable before running these commands:
+Set `FLASK_APP=run.py` environment variable.
 
-1. Set the Flask application:
-```bash
-export FLASK_APP=run.py
-```
-
-2. Initialize the database:
+1. Initialize the database (creates tables based on models):
 ```bash
 flask init-db
 ```
 
-3. Seed the database with sample data:
+2. Seed the database with sample starter prompts:
 ```bash
-flask seed-db
+flask seed-prompts
 ```
 
-4. Drop all database tables (requires confirmation):
+## Database Migrations
+
+If you modify the `StarterPrompt` model:
+
+1. Initialize migrations (only if you haven't before):
 ```bash
-flask drop-db
+flask db init
+```
+
+2. Create a new migration:
+```bash
+flask db migrate -m "Describe model changes for starter_prompt"
+```
+
+3. Apply the migration:
+```bash
+flask db upgrade
 ```
 
 ## Running the Application
 
-1. Start the Flask development server:
 ```bash
 python run.py
 ```
-
-2. The server will start at `http://localhost:5000`
+The server will start at `http://localhost:5000`.
 
 ## API Endpoints
 
 - `GET /`: Welcome message
-- `GET /api/users`: Get all users
-- `POST /api/users`: Create a new user
-  - Required fields: username, email
+- `GET /api/starter-prompt`: Get a random starter prompt
+  - Returns: `{"prompt": "...", "illustration": "..."}` or `{"error": "..."}` (404)
 
 ## Database
 
-The application uses SQLite as the database backend. The database file (`app.db`) will be created in the `instance` directory when you run the `flask init-db` command. This is Flask's default location for instance-specific files like databases and configuration files that shouldn't be committed to version control.
+Uses SQLite, database file `instance/app.db` is created by `flask init-db`.
