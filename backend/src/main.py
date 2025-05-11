@@ -2,6 +2,7 @@ from typing import List
 import json
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 
@@ -12,10 +13,9 @@ class Scene(BaseModel):
 
 app = FastAPI()
 
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+# Mount the frontend's dist directory to be served at the root
+# The path is relative to this main.py file (backend/src/main.py)
+app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="app_root")
 
 
 @app.get("/scenes", response_model=List[Scene])
