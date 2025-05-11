@@ -1,89 +1,79 @@
-# Flask SQLite Boilerplate (Simplified)
+# FastAPI Visual Novel Scene Server
 
-A radically simplified Flask application with SQLite for serving starter prompts.
+A FastAPI application for serving scene data for a visual novel from a JSONL file.
 
 ## Project Structure
 
 ```
 .
-├── pyproject.toml      # Project configuration and dependencies
-├── run.py              # Application entry point
-├── src/
-│   └── flask_sqlite_boilerplate/
-│       ├── __init__.py     # Package initialization, contains app factory and routes
-│       ├── models/
-│       │   └── starter_prompt.py  # StarterPrompt model
-│       └── cli.py          # Database management commands (init-db, seed-prompts)
-└── instance/
-    └── app.db            # SQLite database file (created by Flask)
+├── pyproject.toml        # Project configuration and dependencies (for uv/pip)
+├── data/
+│   └── scenes.jsonl      # Scene data in JSONL format
+└── src/
+    └── main.py           # FastAPI application and Pydantic models
 ```
 
 ## Setup
 
-1. Install uv (if not already installed):
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+1.  **Install uv (if not already installed):**
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+    *Alternatively, if you have pipx, you can use `pipx install uv`.*
+
+2.  **Create and activate a virtual environment using `uv`:**
+    ```bash
+    uv venv  # Creates a .venv directory
+    source .venv/bin/activate  # On macOS/Linux
+    # .venv\Scripts\activate.bat  # On Windows
+    ```
+
+3.  **Install dependencies using `uv`:**
+    With the virtual environment activated, run:
+    ```bash
+    uv pip install -e .
+    ```
+    This command reads the dependencies from `pyproject.toml` and installs them.
+    *(The `-e` flag installs the project in editable mode, which is useful for development.)*
+
+## Data File
+
+The application serves scene data from `data/scenes.jsonl`. Each line in this file should be a JSON object representing a scene. Each scene object must contain:
+-   `prompt`: A string representing the short text displayed to the viewer.
+-   `illustration`: A string representing the path to the illustration image.
+
+Example content for `data/scenes.jsonl`:
+```json
+{"prompt": "A beautiful sunrise over a mountain range.", "illustration": "images/sunrise.png"}
+{"prompt": "A cozy cabin in a snowy forest.", "illustration": "images/cabin_snow.jpg"}
+{"prompt": "A bustling medieval marketplace.", "illustration": "images/market.webp"}
 ```
-
-2. Create a virtual environment:
-```bash
-uv venv
-```
-
-3. Activate the virtual environment:
-   (macOS/Linux) `source .venv/bin/activate` or (Windows) `.venv\Scripts\activate`
-
-4. Install dependencies:
-```bash
-uv pip install -e .
-```
-
-## Database Management
-
-Set `FLASK_APP=run.py` environment variable.
-
-1. Initialize the database (creates tables based on models):
-```bash
-flask init-db
-```
-
-2. Seed the database with sample starter prompts:
-```bash
-flask seed-prompts
-```
-
-## Database Migrations
-
-If you modify the `StarterPrompt` model:
-
-1. Initialize migrations (only if you haven't before):
-```bash
-flask db init
-```
-
-2. Create a new migration:
-```bash
-flask db migrate -m "Describe model changes for starter_prompt"
-```
-
-3. Apply the migration:
-```bash
-flask db upgrade
-```
+Make sure this file exists in the `data/` directory relative to where you run the application, or update the path in `src/main.py`.
 
 ## Running the Application
 
+Navigate to the root directory of the project and ensure your virtual environment (created with `uv`) is activated.
+
+Then run:
 ```bash
-python run.py
+python src/main.py
 ```
-The server will start at `http://localhost:5000`.
+The server will start, and by default, it will be accessible at `http://0.0.0.0:8000`.
 
 ## API Endpoints
 
-- `GET /`: Welcome message
-- `GET /api/starter-prompt`: Get a random starter prompt
-  - Returns: `{"prompt": "...", "illustration": "..."}` or `{"error": "..."}` (404)
+-   **`GET /`**
+    -   Description: A simple welcome message.
+    -   Response: `{"Hello": "World"}`
 
-## Database
-
-Uses SQLite, database file `instance/app.db` is created by `flask init-db`.
+-   **`GET /scenes`**
+    -   Description: Retrieves a list of all scenes from `data/scenes.jsonl`.
+    -   Response Model: `List[Scene]` (where `Scene` is a Pydantic model with `prompt: str` and `illustration: str`)
+    -   Example Success (200 OK) Response:
+        ```json
+        [
+            {"prompt": "A beautiful sunrise over a mountain range.", "illustration": "images/sunrise.png"},
+            {"prompt": "A cozy cabin in a snowy forest.", "illustration": "images/cabin_snow.jpg"}
+        ]
+        ```
+    -   Behavior: If `data/scenes.jsonl` is not found, it returns an empty list `[]`.
