@@ -31,7 +31,9 @@ const EditScene: React.FC<Props> = ({navigation}) => {
 
     console.log("scene", scene);
     return (
-        <SafeAreaView style={[common.container, {justifyContent: 'space-between'}]}>
+        <SafeAreaView style={common.background}>
+            <View style={common.container}>
+                
             <View style={common.header}>
                 <Text style={common.title}>Your Story</Text>
                 <Text style={common.text}>Write the next 2 - 3 sentences of your story (max 500 characters). </Text>
@@ -39,7 +41,7 @@ const EditScene: React.FC<Props> = ({navigation}) => {
                 <TextInput
                     style={createStyles.input}
                     placeholder="Write your story here..."
-                    placeholderTextColor="#FFF"
+                    placeholderTextColor="#aaa"
                     multiline
                     numberOfLines={10}
                     maxLength={500}
@@ -58,6 +60,8 @@ const EditScene: React.FC<Props> = ({navigation}) => {
                     <Text style={common.text}>Generate image</Text>
                 </TouchableOpacity>
             </View>
+            </View>
+            
         </SafeAreaView>
     );
 };

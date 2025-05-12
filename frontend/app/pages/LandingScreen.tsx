@@ -20,8 +20,8 @@ const LandingScreen: React.FC = () => {
     };
 
     return (
-        <SafeAreaView style={common.container}>
-            <View>
+        <SafeAreaView style={common.background}>
+            <View style={common.container}>
                 <View id="header" style={common.header}>
                     <Text style={common.title}>Your Story</Text>
                     <Text style={common.subtleText}>A platform for storytellers to find inspiration and share their creations.</Text>
@@ -36,23 +36,20 @@ const LandingScreen: React.FC = () => {
                         <Text style={common.promptText}>{prompt.prompt}</Text>
                     </View>
                 </View>
-            </View>
-            <View id='button-container' style={common.buttonContainer}>
-                <TouchableOpacity 
-                style={[common.button, {backgroundColor: '#FF6347'}]}
-                onPress={continueStory}
-                >
-                    <Text style={common.buttonText}>Continue the story</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[common.button, {backgroundColor: '#2e2e2e'}]} onPress={() => setPrompt(getPrompt())}>
-                    <Text style={common.buttonText}>Try another prompt</Text>
-                </TouchableOpacity>
+                <View id='button-container' style={common.buttonContainer}>
+                    <TouchableOpacity 
+                    style={[common.button, {backgroundColor: '#FF6347'}]}
+                    onPress={continueStory}
+                    >
+                        <Text style={common.buttonText}>Continue the story</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[common.button, {backgroundColor: '#2e2e2e'}]} onPress={() => setPrompt(getPrompt())}>
+                        <Text style={common.buttonText}>Try another prompt</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </SafeAreaView>
     );
 };
-
-const landingStyles = StyleSheet.create({
-});
 
 export default LandingScreen;

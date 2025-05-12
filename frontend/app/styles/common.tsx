@@ -1,10 +1,15 @@
 import { StyleSheet } from 'react-native';
 
 const common = StyleSheet.create({
-    container: {
+    background: {
         flex: 1,
         backgroundColor: '#222222',
-        justifyContent: 'space-between'
+        alignItems: 'center',
+    },
+    container: {
+        flex: 1,
+        justifyContent: 'space-between',
+        maxWidth: 600
     },
     text: {
         fontSize: 16,

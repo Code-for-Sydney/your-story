@@ -36,7 +36,7 @@ const Carousel: React.FC<CarouselProps> = ({ story }) => {
                 style={{ width: 30, height: 30, margin: 10 }}
                 />
             </TouchableOpacity>
-            <Text style={common.promptText}>{story[currentIndex].scene.prompt}</Text>
+            <Text style={[common.text, {textAlign: 'center'}]}>{story[currentIndex].scene.prompt}</Text>
             <TouchableOpacity 
             onPress={handleNext}
             style={[{alignSelf: 'flex-end'}]}>
