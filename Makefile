@@ -6,7 +6,7 @@ frontend:
 
 backend:
 	cd backend && [ -d .venv ] || uv venv .venv
-	cd backend && source .venv/bin/activate && uv sync
+	cd backend && . .venv/bin/activate && uv sync
 
 run:
 	backend/.venv/bin/python backend/src/main.py
