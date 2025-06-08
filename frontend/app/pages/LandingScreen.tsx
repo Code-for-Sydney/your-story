@@ -4,6 +4,8 @@ import { prompt } from '../../testdata.js';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import common from '../styles/common';
+import type { StoryType } from '../../types/story';
+import StoryImage from '../components/StoryImage';
 
 
 const getPrompt = () => {
@@ -15,8 +17,16 @@ const LandingScreen: React.FC = () => {
     const navigation = useNavigation();
 
     const continueStory = () => {
-        // Backend logic
-       navigation.navigate('Create');
+        //This won't work on iOS or Android
+        const storyObject: StoryType[] = [{
+            id: 0,
+            scene: {
+                prompt: prompt.prompt,
+                illustration: prompt.illustration
+            }
+        }]
+        localStorage.setItem('story', JSON.stringify(storyObject));
+        navigation.navigate('Create', { story: storyObject });
     };
 
     return (
@@ -26,27 +36,18 @@ const LandingScreen: React.FC = () => {
                     <Text style={common.title}>Your Story</Text>
                     <Text style={common.subtleText}>A platform for storytellers to find inspiration and share their creations.</Text>
                 </View>
-                <View id="image-container" style={common.imageContainer}>
-                    <Image
-                        source={require("../../assets/placeholder.png")}
-                        style={common.image}
-                        resizeMode='contain'
-                    />
-                    <View style={common.promptOverlay}>
-                        <Text style={common.promptText}>{prompt.prompt}</Text>
-                    </View>
-                </View>
-                <View id='button-container' style={common.buttonContainer}>
-                    <TouchableOpacity 
-                    style={[common.button, {backgroundColor: '#FF6347'}]}
-                    onPress={continueStory}
-                    >
-                        <Text style={common.buttonText}>Continue the story</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[common.button, {backgroundColor: '#2e2e2e'}]} onPress={() => setPrompt(getPrompt())}>
-                        <Text style={common.buttonText}>Try another prompt</Text>
-                    </TouchableOpacity>
-                </View>
+               <StoryImage scene={prompt} />
+            <View id='button-container' style={common.buttonContainer}>
+                <TouchableOpacity 
+                style={[common.button, {backgroundColor: '#FF6347'}]}
+                onPress={continueStory}
+                >
+                    <Text style={common.buttonText}>Continue the story</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[common.button, {backgroundColor: '#2e2e2e'}]} onPress={() => setPrompt(getPrompt())}>
+                    <Text style={common.buttonText}>Try another prompt</Text>
+                </TouchableOpacity>
+            </View>
             </View>
         </SafeAreaView>
     );

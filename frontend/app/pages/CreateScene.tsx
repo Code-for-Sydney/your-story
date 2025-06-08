@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { story } from '../../testdata.js';
-import { useNavigation } from '@react-navigation/native';
 import type { StoryType, SceneType } from '../../types/story';
 import Carousel from '../components/Carousel';
 import common from '../styles/common';
@@ -11,25 +9,20 @@ import { RootStackParamList } from '../../types/navigation';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Create'>{}
 
-const EditScene: React.FC<Props> = ({navigation}) => {
-    const [currentStory, setCurrentStory] = useState<StoryType[]>(story);
-    const [scene, setScene] = useState<string>('');
+const EditScene: React.FC<Props> = ({route, navigation}) => {
+    const currentStory: StoryType[] = route.params.story;
+    const [prompt, setPrompt] = useState<string>('');
     const [validationFailed, setValidationFailed] = useState<boolean>(false);
- 
 
-    console.log(currentStory);
-
-    const submitScene = () => {
-        //logic
-        if(scene) {
+    const submitPrompt = () => {
+        if(prompt) {
             setValidationFailed(false);
-            navigation.navigate('Image', {scene: scene});
+            navigation.navigate('Image', {prompt: prompt, story: currentStory});
         } else {
             setValidationFailed(true);
         } 
     }
 
-    console.log("scene", scene);
     return (
         <SafeAreaView style={common.background}>
             <View style={common.container}>
@@ -37,7 +30,7 @@ const EditScene: React.FC<Props> = ({navigation}) => {
             <View style={common.header}>
                 <Text style={common.title}>Your Story</Text>
                 <Text style={common.text}>Write the next 2 - 3 sentences of your story (max 500 characters). </Text>
-                <Carousel story={currentStory} />
+                <Carousel story={currentStory} textOnly={true}/>
                 <TextInput
                     style={createStyles.input}
                     placeholder="Write your story here..."
@@ -45,7 +38,7 @@ const EditScene: React.FC<Props> = ({navigation}) => {
                     multiline
                     numberOfLines={10}
                     maxLength={500}
-                    onChangeText={text => setScene(text)}
+                    onChangeText={text => setPrompt(text)}
                     autoFocus
                 />
                 {validationFailed ? 
@@ -55,7 +48,7 @@ const EditScene: React.FC<Props> = ({navigation}) => {
             <View style={[common.buttonContainer, {marginBottom: 20}]}>
                 <TouchableOpacity
                     style={[common.button, { backgroundColor: '#FF6347' }]}
-                    onPress={submitScene}
+                    onPress={submitPrompt}
                 >
                     <Text style={common.text}>Generate image</Text>
                 </TouchableOpacity>

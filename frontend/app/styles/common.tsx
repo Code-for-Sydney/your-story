@@ -4,12 +4,11 @@ const common = StyleSheet.create({
     background: {
         flex: 1,
         backgroundColor: '#222222',
-        alignItems: 'center',
+        //alignItems: 'center',
     },
     container: {
         flex: 1,
-        justifyContent: 'space-between',
-        maxWidth: 600
+        justifyContent: 'space-between'
     },
     text: {
         fontSize: 16,

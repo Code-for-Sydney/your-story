@@ -1,9 +1,12 @@
+import { StoryType } from "./story";
+
+
 export type RootStackParamList = {
     Landing: undefined;
-    Create: undefined;
-    Image: { scene: string };
+    Create: { story: StoryType[]};
+    Image: { prompt: string, story: StoryType[] };
     Edit: undefined;
-    View: undefined;
+    View: { story: StoryType[] };
   };
 
 declare global {
