@@ -1,9 +1,9 @@
-export interface SceneType {
+export interface BaseSceneType {
     prompt: string;
     illustration: string; 
 }
 
-export interface StoryType {
-    id: number;
-    scene: SceneType;
+export interface SceneType {
+    id: string;
+    scene: BaseSceneType;
 }

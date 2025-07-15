@@ -45,9 +45,7 @@ const ViewStory: React.FC<Props> = ({route, navigation}) => {
                     <Text style={common.subtleText}>A platform for storytellers to find inspiration and share their creations.</Text>
                     <Carousel story={story} textOnly={false}/>
                     <View style={{marginTop: 20}}>
-                        <Text style={common.subtleText
-
-                        }>Share your story with the link below.</Text>
+                        <Text style={common.subtleText       }>Share your story with the link below.</Text>
                         <View style={common.greyContainer}>
                             <Text style={[common.text, {color: '#FF6347', fontWeight: 'bold'}]}>
                                 {link}

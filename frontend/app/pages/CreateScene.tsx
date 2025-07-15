@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { StoryType, SceneType } from '../../types/story';
+import type { SceneType } from '../../types/story';
 import Carousel from '../components/Carousel';
 import common from '../styles/common';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,14 +10,15 @@ import { RootStackParamList } from '../../types/navigation';
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Create'>{}
 
 const EditScene: React.FC<Props> = ({route, navigation}) => {
-    const currentStory: StoryType[] = route.params.story;
+    const storyId = route.params.id;
+    const currentStory: SceneType[] = route.params.story;
     const [prompt, setPrompt] = useState<string>('');
     const [validationFailed, setValidationFailed] = useState<boolean>(false);
 
     const submitPrompt = () => {
         if(prompt) {
             setValidationFailed(false);
-            navigation.navigate('Image', {prompt: prompt, story: currentStory});
+            navigation.navigate('Image', {prompt: prompt, id: storyId, story: currentStory});
         } else {
             setValidationFailed(true);
         } 

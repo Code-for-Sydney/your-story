@@ -1,19 +1,21 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Text, View, Image } from 'react-native';
-import { SceneType } from '../../types/story';
+import { BaseSceneType } from '../../types/story';
 import common from '../styles/common';
+import { baseUrl } from '../../testdata.js';
 
 
 interface StoryImageProps {
-    scene: undefined | SceneType;
+    scene: undefined | BaseSceneType;
 }
 
 const StoryImage: React.FC<StoryImageProps> = ({ scene }) => {
-
+    const [imageUrl, setImageUrl] = useState(baseUrl + scene?.illustration);
+    console.log(imageUrl)
     return (
         <View id="image-container" style={common.imageContainer}>
             <Image
-                source={require("../../assets/placeholder.png")}
+                source={imageUrl ? { uri: imageUrl } : undefined}
                 style={common.image}
                 resizeMode='contain'
             />

@@ -36,8 +36,8 @@ const common = StyleSheet.create({
     },
     image: {
         margin: 5,
-        width: '99%',
-        maxHeight: 400,
+        width: 500,
+        height: 500,
         borderRadius: 10
     },
     header: {

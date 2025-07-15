@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { StoryType, SceneType } from '../../types/story';
+import type { SceneType, BaseSceneType } from '../../types/story';
 import Carousel from '../components/Carousel';
 import common from '../styles/common';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,34 +12,50 @@ interface Props extends NativeStackScreenProps<RootStackParamList, 'Image'>{}
 
 const GenImage: React.FC<Props> = ({ route, navigation }) => {
     const prompt: string = route.params.prompt;
-    const currentStory: StoryType[] = route.params.story;
+    const storyId: string = route.params.id;
+    const currentStory: SceneType[] = route.params.story;
     const [loading, setLoading] = useState<boolean>(true);
     const [img, setImg] = useState<string>('');
-    const [scene, setScene] = useState<SceneType>();
+    const [scene, setScene] = useState<BaseSceneType>();
 
     useEffect(() => {
-        awaitImage();
+        generateImage();
     }
     , []);
 
-    const awaitImage = async () => {
-        setTimeout(() => {
-            const tempScene: SceneType = {
-                prompt: prompt,
-                illustration: 'assets/placeholder.png' // Placeholder image path
-            };
-            setScene(tempScene);
-            setLoading(false)
-        }, 2000)
-        setImg('assets/placeholder.png');
+    const generateImage = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:8000/api/generate-scene-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: storyId, scene_description: prompt }),
+            });
+            const data = await response.json();
+            console.log("data", data)
+            if (data.image) {
+                setScene({
+                        prompt: prompt,
+                        illustration: data.image
+                });
+            } else {
+                console.error('No image returned from API');
+            }
+        } catch (error) {
+            console.error('Error generating image:', error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const createStoryObject = () => {
         const nextId = currentStory.length;
-        const storyObject: StoryType[] = [
+        const storyObject: SceneType[] = [
             ...currentStory,
             {
-                id: nextId,
+                id: nextId.toString(),
                 scene: {
                     prompt: prompt,
                     illustration: img
@@ -56,7 +72,7 @@ const GenImage: React.FC<Props> = ({ route, navigation }) => {
 
     const regenerateImage = () => {
         setLoading(true);
-        awaitImage();
+        generateImage();
     }
 
     const handleSaveAndExit = () => {
