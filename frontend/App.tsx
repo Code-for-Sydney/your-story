@@ -8,13 +8,20 @@ import GenImage from './app/pages/GenImage';
 import ViewStory from './app/pages/ViewStory';
 import { RootStackParamList } from './types/navigation';
 
-
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const linking = {
+  prefixes: [],
+  config: {
+    screens: {
+      View: 'view/:id'
+    }
+  }
+}
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator initialRouteName='Landing' screenOptions={{headerShown: false}}>
         <Stack.Screen name="Landing" component={LandingScreen}/>
         <Stack.Screen name="Create" component={CreateScene}/>

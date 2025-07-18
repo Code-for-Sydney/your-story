@@ -1,11 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
-import { StoryType } from '../../types/story';
+import { SceneType } from '../../types/story';
 import common from '../styles/common';
 import StoryImage from './StoryImage';
 
 interface CarouselProps {
-    story: StoryType[];
+    story: SceneType[];
     textOnly: boolean;
 }
 

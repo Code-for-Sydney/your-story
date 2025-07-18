@@ -1,19 +1,39 @@
 import React, { use, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Touchable } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, Touchable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { StoryType, SceneType } from '../../types/story';
+import type { SceneType } from '../../types/story';
 import Carousel from '../components/Carousel';
 import common from '../styles/common';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
+import { baseUrl } from '../../testdata';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'View'>{}
 
 const ViewStory: React.FC<Props> = ({route, navigation}) => {
+    const [loading, setLoading] = useState<boolean>(true);
+    const [story, setStory] = useState<SceneType[]>()
     const [copySuccess, setCopySuccess] = useState<boolean>(false);
     const [showSuccess, setShowSuccess] = useState<boolean>(false);
-    const story: StoryType[] = route.params.story;
-    const link = `https://yourstoryapp.com/view/1234`;
+    const storyId = route.params.id
+    const link = baseUrl + 'view/' + storyId;
+
+    const getStory = async () => {
+        try {
+        const response = await fetch(baseUrl + 'api/get-story/' + storyId)
+        const storyObject = await response.json()
+        setStory(storyObject.story)
+        } catch (e) {
+            console.log(e)
+        } finally {
+            setLoading(false)
+        }
+
+    }
+
+    useEffect(() => {
+        getStory();
+    }, [])
 
     useEffect(() => {
         setShowSuccess(copySuccess);
@@ -43,15 +63,19 @@ const ViewStory: React.FC<Props> = ({route, navigation}) => {
                 <View style={common.header}>
                     <Text style={common.title}>Your Story</Text>
                     <Text style={common.subtleText}>A platform for storytellers to find inspiration and share their creations.</Text>
-                    <Carousel story={story} textOnly={false}/>
-                    <View style={{marginTop: 20}}>
-                        <Text style={common.subtleText       }>Share your story with the link below.</Text>
-                        <View style={common.greyContainer}>
-                            <Text style={[common.text, {color: '#FF6347', fontWeight: 'bold'}]}>
-                                {link}
-                            </Text>
+                    {loading ? <ActivityIndicator/> : (
+                    <>
+                        <Carousel story={story} textOnly={false}/>
+                        <View style={{marginTop: 20}}>
+                            <Text style={common.subtleText}>Share your story with the link below.</Text>
+                            <View style={common.greyContainer}>
+                                <Text style={[common.text, {color: '#FF6347', fontWeight: 'bold'}]}>
+                                    {link}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
+                    </>
+                    )}
                 </View>
                 {showSuccess ? (
                     <View style={viewStyles.popUp}>

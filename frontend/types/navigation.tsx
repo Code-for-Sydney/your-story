@@ -6,7 +6,7 @@ export type RootStackParamList = {
     Create: { id: string, story: SceneType[]};
     Image: { prompt: string, id: string, story: SceneType[] };
     Edit: undefined;
-    View: { story: SceneType[] };
+    View: { id: string };
   };
 
 declare global {

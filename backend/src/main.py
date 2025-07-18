@@ -6,12 +6,12 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import HTTPException
+from fastapi import HTTPException, Body
 import uuid
-import requests
 from dotenv import load_dotenv
 import os
 import base64
+from functions import make_ai_call, image_converter_system_prompt, human_prompt_system_prompt
 
 load_dotenv()
 
@@ -38,8 +38,7 @@ app = FastAPI()
 # remove 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,  # Set to True if you need to allow cookies or authorization headers
+    allow_origins=["*"],  # Set to True if you need to allow cookies or authorization headers
     allow_methods=["*"],     # Allow all HTTP methods (GET, POST, PUT, etc.)
     allow_headers=["*"],     # Allow all headers
 )
@@ -50,28 +49,45 @@ def get_image(image_name):
 
 @app.get("/api/human-prompt")
 def read_scenes():
-    scenes = []
+    text_model = "@cf/meta/llama-3.2-1b-instruct"
+    image_model = "@cf/black-forest-labs/flux-1-schnell"
+    settings = ['fantasy', 'space-based sci-fi', 'cyberpunk dystopia', 'alternate modern history']
+    initial_prompt_input = {
+    "messages": [
+        {"role": "system", "content": human_prompt_system_prompt},
+        {"role": "user", "content": random.choice(settings)}
+    ]
+    }
     try:
-        with open("backend/data/scenes.jsonl", "r") as f:
-            for line in f:
-                if line.strip(): # Ensure line is not empty
-                    scenes.append(BaseScene(**json.loads(line)))
-    except FileNotFoundError:
+        human_prompt = make_ai_call(text_model, initial_prompt_input)
+        image_converter_prompt = {
+            "messages": [
+                {"role": "system", "content": image_converter_system_prompt},
+                {"role": "user", "content": human_prompt["result"]["response"]}
+            ]
+        }
+        image_converter = make_ai_call(text_model, image_converter_prompt)
+        image_response = make_ai_call(image_model, {"prompt": image_converter["result"]["response"]})
+        image_id = uuid.uuid4()
+        with open(f"backend/assets/illustrations/{image_id}.png", "wb") as f:
+            f.write(base64.b64decode(image_response["result"]["image"]))
+    except:
         raise HTTPException(status_code=500, detail="Internal server error.")
-    return random.choice(scenes)
+    return {
+        "prompt": human_prompt["result"]["response"],
+        "illustration": f"assets/illustrations/{image_id}.png"
+    }
 
 @app.post("/api/create-story")
 def create_story(scene: Scene):
     story_id = uuid.uuid4()
     story_json = {
         "id": str(story_id),
-        "style": "gritty comic book",
         "story": [scene.model_dump()]
         }
     try:
         with open("backend/data/stories.jsonl", "a") as f:
             f.write(json.dumps(story_json) + "\n")
-            f.close()
     except FileNotFoundError:
         raise HTTPException(status_code=500, detail="Internal server error.")
     return {
@@ -92,24 +108,60 @@ def create_scene_image(request: GenerateImageRequest):
                     break
     except FileNotFoundError:
         raise HTTPException(status_code=500, detail="Internal server error.")
-    prompt = f'''The following text is a scene in a story.
-    {request.scene_description}
-    Generate an illustration for this scene in a {story["style"]} style.'''
-    model = "@cf/black-forest-labs/flux-1-schnell"
-    headers = {"Authorization": f"Bearer {os.environ.get("CLOUDFLARE_API_KEY")}"}
-    try:
-        response = requests.post(f"{os.environ.get("API_BASE_URL")}{model}", headers=headers, json={"prompt": prompt})
-        image_id = uuid.uuid4()
-        print(response)
-        data = response.json()
-        with open(f"backend/assets/illustrations/{image_id}.png", "wb") as f:
-            f.write(base64.b64decode(data["result"]["image"]))
-    except:
-        raise HTTPException(status_code=500, detail="Failed to generate image.")
+    prompt = request.scene_description
+    text_model = "@cf/meta/llama-3.2-1b-instruct"
+    image_model = "@cf/black-forest-labs/flux-1-schnell"
+    text_model_input = {
+      "messages": [
+        {"role": "system", "content": image_converter_system_prompt},
+        {"role": "user", "content": f"Scene description: {prompt}\n\nPrevious scenes:\n{current_story}"}
+      ]
+    }
+    text_response = make_ai_call(text_model, text_model_input)
+    image_prompt = f'''
+     {text_response["result"]["response"]}'''
+    print(image_prompt)
+    image_response = make_ai_call(image_model, {"prompt": image_prompt})
+    image_id = uuid.uuid4()
+    with open(f"backend/assets/illustrations/{image_id}.png", "wb") as f:
+        f.write(base64.b64decode(image_response["result"]["image"]))
     return {
         "image": f"assets/illustrations/{image_id}.png"
     }
 
+@app.post("/api/update-story/{id}")
+def update_story(id: str, scene: Scene):
+    try:
+        print("here")
+        with open("backend/data/stories.jsonl", "r") as read_file, open("backend/data/temp.jsonl", "a") as write_file:
+            for line in read_file:
+                if json.loads(line)['id'] == id:
+                    story_object = json.loads(line)
+                    new_story = story_object['story']
+                    new_story.append(scene.model_dump())
+                    story_object['story'] = new_story
+                    print(story_object)
+                    write_file.write(json.dumps(story_object) + "\n")
+                else:
+                    write_file.write(line)
+            os.replace("backend/data/temp.jsonl", "backend/data/stories.jsonl")
+    except:
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    
+@app.get("/api/get-story/{id}")
+def get_story(id: str):
+    try:
+        with open("backend/data/stories.jsonl", "r") as f:
+            for line in f:
+                if json.loads(line)['id'] == id:
+                    return json.loads(line)
+    except:
+        raise HTTPException(status_code=404, detail="Story not found")
+
+@app.get("/view/{id}")
+def serve_react_view(id: str):
+    # Serve the React app's entry point regardless of the ID
+    return FileResponse(os.path.join("frontend/dist", "index.html"))
 
 # Mount the frontend's dist directory to be served at the root
 # The path is relative to this main.py file (backend/src/main.py)

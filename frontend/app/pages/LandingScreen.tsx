@@ -70,7 +70,12 @@ const LandingScreen: React.FC = () => {
                     <Text style={common.title}>Your Story</Text>
                     <Text style={common.subtleText}>A platform for storytellers to find inspiration and share their creations.</Text>
                 </View>
-                {loading ? <ActivityIndicator/> : (
+                {loading ? (
+                    <View style={common.loading}>
+                        <ActivityIndicator style={{padding: 20}}/>
+                        <Text style={common.subtleText}>Generating a story prompt...</Text> 
+                    </View>
+                ) : (
                 <>
                     <StoryImage scene={prompt} />
                     {submitting ? <ActivityIndicator /> : (

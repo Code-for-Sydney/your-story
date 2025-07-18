@@ -7,6 +7,7 @@ import common from '../styles/common';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
 import StoryImage from '../components/StoryImage';
+import { baseUrl } from '../../testdata';
 
 interface Props extends NativeStackScreenProps<RootStackParamList, 'Image'>{}
 
@@ -15,18 +16,20 @@ const GenImage: React.FC<Props> = ({ route, navigation }) => {
     const storyId: string = route.params.id;
     const currentStory: SceneType[] = route.params.story;
     const [loading, setLoading] = useState<boolean>(true);
-    const [img, setImg] = useState<string>('');
+    const [submitting, setSubmitting] = useState<boolean>(false)
     const [scene, setScene] = useState<BaseSceneType>();
+    const [refresh, setRefresh] = useState<string>('');
 
     useEffect(() => {
+        setLoading(true);
         generateImage();
     }
-    , []);
+    , [refresh]);
 
     const generateImage = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/generate-scene-image', {
+            const response = await fetch(baseUrl + 'api/generate-scene-image', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -37,8 +40,8 @@ const GenImage: React.FC<Props> = ({ route, navigation }) => {
             console.log("data", data)
             if (data.image) {
                 setScene({
-                        prompt: prompt,
-                        illustration: data.image
+                    prompt: prompt,
+                    illustration: data.image
                 });
             } else {
                 console.error('No image returned from API');
@@ -50,36 +53,75 @@ const GenImage: React.FC<Props> = ({ route, navigation }) => {
         }
     }
 
-    const createStoryObject = () => {
+    const createSceneObject = () => {
         const nextId = currentStory.length;
-        const storyObject: SceneType[] = [
-            ...currentStory,
-            {
+        if (!scene) {return "error"}
+        const sceneObject: SceneType =
+            {   
                 id: nextId.toString(),
                 scene: {
-                    prompt: prompt,
-                    illustration: img
+                    prompt: scene.prompt,
+                    illustration: scene.illustration
                 }
             }
-        ];
-        return storyObject;
+        return sceneObject;
     }
 
-    const handleContinue = () => {
-        const storyObject = createStoryObject();
-        navigation.navigate('Create', { story: storyObject });
+    const createStoryObject = (sceneObject: SceneType) => {
+        const storyObject: SceneType[] =
+        [
+            ...currentStory,
+            sceneObject
+        ]
+        return storyObject
+    }
+
+    const handleContinue = async () => {
+        setSubmitting(true)
+        const sceneObject = createSceneObject();
+        try {
+            const response = await fetch(baseUrl + 'api/update-story/' + storyId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(sceneObject),
+            });
+            if (response.status == 200 && sceneObject != "error") {
+                const storyObject = createStoryObject(sceneObject)
+                navigation.navigate('Create', { id: storyId, story: storyObject });
+            } else {throw new Error}
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     const regenerateImage = () => {
-        setLoading(true);
-        generateImage();
+        setRefresh(String(Date.now()))
     }
 
-    const handleSaveAndExit = () => {
-        const storyObject = createStoryObject();
-        const id = "story:" + crypto.randomUUID();
-        localStorage.setItem(id, JSON.stringify(storyObject));
-        navigation.navigate('View', { story: storyObject });
+    const handleSaveAndExit = async () => {
+        //duplication
+        setSubmitting(true)
+        const sceneObject = createSceneObject();
+        try {
+            const response = await fetch(baseUrl + 'api/update-story/' + storyId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(sceneObject),
+            });
+            if (response.status == 200) {
+                navigation.navigate('View', { id: storyId });
+            } else {throw new Error}
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     return (
@@ -99,7 +141,7 @@ const GenImage: React.FC<Props> = ({ route, navigation }) => {
                     </View>
                     )}
                 </View>
-                {loading ? null : (
+                {loading || submitting ? null : (
                 <View style={[common.buttonContainer, {marginBottom: 20}]}>
                     <TouchableOpacity
                         style={[common.button, { backgroundColor: '#FF6347' }]}

@@ -4,11 +4,13 @@ const common = StyleSheet.create({
     background: {
         flex: 1,
         backgroundColor: '#222222',
-        //alignItems: 'center',
+        alignItems: 'center',
     },
     container: {
         flex: 1,
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        maxWidth: 500,
+        maxHeight: 1000
     },
     text: {
         fontSize: 16,
@@ -32,12 +34,12 @@ const common = StyleSheet.create({
         position: 'absolute',
         backgroundColor: 'rgba(0,0,0,0.2)',
         borderRadius: 10,
-        width: '99%'
+        width: 350
     },
     image: {
         margin: 5,
-        width: 500,
-        height: 500,
+        width: 350,
+        height: 350,
         borderRadius: 10
     },
     header: {
@@ -75,6 +77,11 @@ const common = StyleSheet.create({
         backgroundColor: '#2e2e2e',
         padding: 10,
         borderRadius: 10
+    },
+    loading: {
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 });
 
