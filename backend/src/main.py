@@ -155,11 +155,6 @@ def serve_react_view(id: str):
     # Serve the React app's entry point regardless of the ID
     return FileResponse(os.path.join("frontend/dist", "index.html"))
 
-@app.get("/{full_path:path}")
-async def serve_react_app(full_path: str):
-    file_path = os.path.join("frontend/dist", "index.html")
-    return FileResponse(file_path)
-
 # Mount the frontend's dist directory to be served at the root
 # The path is relative to this main.py file (backend/src/main.py)
 app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="app_root")
