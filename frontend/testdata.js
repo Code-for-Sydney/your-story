@@ -17,7 +17,7 @@ export const story = [{
     },
 }]
 
-export const baseUrl = 'http://0.0.0.0:8000/'
+export const baseUrl = 'https://your-story-g8me.onrender.com/'
 
 export const story2 = [
     {

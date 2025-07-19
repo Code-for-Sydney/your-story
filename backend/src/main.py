@@ -35,14 +35,6 @@ class GenerateImageRequest(BaseModel):
 
 app = FastAPI()
 
-# remove 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Set to True if you need to allow cookies or authorization headers
-    allow_methods=["*"],     # Allow all HTTP methods (GET, POST, PUT, etc.)
-    allow_headers=["*"],     # Allow all headers
-)
-
 @app.get("/assets/illustrations/{image_name}")
 def get_image(image_name):
     return FileResponse(f"backend/assets/illustrations/{image_name}")
@@ -162,6 +154,11 @@ def get_story(id: str):
 def serve_react_view(id: str):
     # Serve the React app's entry point regardless of the ID
     return FileResponse(os.path.join("frontend/dist", "index.html"))
+
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    file_path = os.path.join("frontend/dist", "index.html")
+    return FileResponse(file_path)
 
 # Mount the frontend's dist directory to be served at the root
 # The path is relative to this main.py file (backend/src/main.py)
